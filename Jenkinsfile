@@ -23,7 +23,7 @@ pipeline {
                   sh """
                     docker run -d -p 809${BRANCH_NAME=="main"?0:1}:3000 --name jenkins-mold-client-${BRANCH_NAME} jenkins-mold-client-${BRANCH_NAME}
                   """
-                }
+                } 
             }
 
         }
