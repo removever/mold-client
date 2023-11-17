@@ -1,13 +1,16 @@
 pipeline {
-       agent {
+      agent {
         docker { image 'node:latest' }
-    }
+      }
+      environment {
+        BRANCH_NAME = "${GIT_BRANCH.split("/")[1]}"
+      }
     stages {
         stage('build && push-registry'){
             steps{
                 script{
                   sh """
-                    docker build -t jenkins-mold-client . 
+                    docker build -t jenkins-mold-client-${BRANCH_NAME} . 
                     docker --version
                     docker ps
                   """
@@ -18,7 +21,7 @@ pipeline {
             steps{
                 script{
                   sh """
-                    docker run -d -p 8083:3000 --name jenkins-mold-client jenkins-mold-client
+                    docker run -d -p 809${BRANCH_NAME=="main"?0:1}:3000 --name jenkins-mold-client-${BRANCH_NAME} jenkins-mold-client-${BRANCH_NAME}
                   """
                 }
             }
