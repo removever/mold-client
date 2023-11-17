@@ -7,19 +7,22 @@ pipeline {
             steps{
                 script{
                   sh """
+                    docker build -t jenkins-mold-client . 
                     docker --version
                     docker ps
                   """
-                    // withCredentials([usernamePassword(credentialsId: 'user-docker-hub', passwordVariable: 'libSecret', usernameVariable: 'libUser')
-                    //     ]) {
-                    //         sh """
-                    //         docker build -f Dockerfile -t removesver/mold-client . 
-                    //         docker login  -u ${libUser} -p ${libSecret} 
-                    //         docker push removesver/mold-client
-                    //         """
-                    //     }
                 }
             }
+        }
+        stage('deploy'){
+            steps{
+                script{
+                  sh """
+                    docker run -d -p 8083:3000 --name jenkins-mold-client jenkins-mold-client
+                  """
+                }
+            }
+
         }
     }
 }
