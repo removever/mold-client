@@ -1,0 +1,90 @@
+
+<script lang="ts" setup>
+import Swal from "sweetalert2"
+import { ProcessTitle } from "~~/misc/types"
+
+definePageMeta({ middleware: ["auth"] });
+const { generateProcessTitleID, insertProcessTitle, } = useProcessTitle();
+const router = useRouter();
+
+const submitting = ref(false)
+const process_title = ref<ProcessTitle>({
+  process_title_id: '',
+  process_title_name: '',
+});
+
+onMounted(async () => {
+  try {
+    const id = await generateProcessTitleID()
+    process_title.value.process_title_id = id
+  } catch (e) {
+    console.log(e)
+  }
+})
+
+async function onSubmit() {
+  if (submitting.value || !validateForm()) return
+
+  try {
+    submitting.value = true
+    
+    await insertProcessTitle(process_title.value);
+    void Swal.fire({ title: 'สำเร็จ', text: 'บันทึกข้อมูลแล้ว', icon: "success" })
+    await router.push({ path: '/process-title' });
+  } catch (e) {
+    console.log(e)
+    submitting.value = false
+  }
+}
+
+function validateForm(): boolean {
+  const {
+    process_title_id,
+    process_title_name,
+  } = process_title.value
+
+  if (!(process_title_id && process_title_name)) {
+    void Swal.fire({ text: 'กรุณากรอกข้อมูลให้ครบถ้วน', icon: "warning" })
+    return false
+  }
+  return true
+}
+</script>
+
+<template>
+  <v-breadcrumbs :items="[
+    { title: 'คุณสมบัติ', to: '/process-title', },
+    { title: 'เพิ่มรายการใหม่', disabled: true, }
+  ]">
+    <template v-slot:title="{ item }">{{ item.title.toUpperCase() }}</template>
+  </v-breadcrumbs>
+  <v-card elevation="10" class="withbg">
+    <v-card-title>เพิ่มรายการใหม่</v-card-title>
+    <v-card-text class="py-4">
+      <v-row>
+        <v-col cols="12" md="12">
+          <v-row>
+            <v-col cols="12" sm="6" lg="3">
+              <v-label class="mb-2">รหัสคุณสมบัติ<span class="text-error ml-1">*</span></v-label>
+              <v-text-field v-model="process_title.process_title_id" density="compact" :rules="[rules.required]"
+                variant="outlined"></v-text-field>
+            </v-col>
+            <v-col cols="12" sm="6" lg="4">
+              <v-label class="mb-2">ชื่อคุณสมบัติ<span class="text-error ml-1">*</span></v-label>
+              <v-text-field v-model="process_title.process_title_name" :rules="[rules.required]" density="compact" variant="outlined"
+                class="btn-small"></v-text-field>
+            </v-col>
+          </v-row>
+        </v-col>
+      </v-row>
+    </v-card-text>
+    <v-card-text class="d-flex flex-wrap justify-center gap-2">
+      <v-btn color="save" @click="onSubmit">
+        <template v-if="submitting">
+          <v-progress-circular class="mr-2" indeterminate color="success" :size="16"></v-progress-circular>
+        </template> บันทึก
+      </v-btn>
+      <v-btn color="muted" :to="'/process-title'">ยกเลิก</v-btn>
+    </v-card-text>
+  </v-card>
+</template>
