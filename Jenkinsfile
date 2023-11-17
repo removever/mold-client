@@ -1,37 +1,11 @@
 pipeline {
        agent {
-        kubernetes {
-             yaml """
-            apiVersion: v1
-            kind: Pod
-            spec:
-                containers:
-                  - name: nodejs
-                    image: node:latest
-                    alwaysPullImage: false
-                    command:
-                    - cat
-                    tty: true
-                  - name: docker
-                    image: docker:latest
-                    command:
-                    - cat
-                    tty: true
-                    volumeMounts:
-                    - mountPath: /var/run/docker.sock
-                      name: docker-sock
-                volumes:
-                  - name: docker-sock
-                    hostPath:
-                      path: /var/run/docker.sock
-            """
-        }
+        docker { image 'node:latest' }
     }
     stages {
         stage('build && push-registry'){
             steps{
                 script{
-                container('docker'){
                   sh """
                     docker --version
                     docker ps
@@ -44,7 +18,6 @@ pipeline {
                     //         docker push removesver/mold-client
                     //         """
                     //     }
-                    }
                 }
             }
         }
